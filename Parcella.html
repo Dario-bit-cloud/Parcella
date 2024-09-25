@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcolo Parcella</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #000; /* Sfondo nero */
+            color: #fff; /* Testo bianco */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+        .container {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+        }
+        h2 {
+            text-align: center;
+            color: red;
+            text-transform: uppercase;
+            font-style: italic;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Ombra sul titolo */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #444;
+        }
+        th {
+            text-align: left;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 8px;
+            background-color: #2a2a2a;
+            color: #fff;
+            margin-top: 5px;
+        }
+        input[readonly] {
+            background-color: #3a3a3a;
+        }
+        /* Pulsanti circolari più piccoli con ombra */
+        .round-button-small {
+            background-color: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin: 0 5px;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Aggiunge ombra */
+        }
+        .round-button-small:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .ritenuta-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        /* Pulsanti icone allineati in una riga */
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .icon-button {
+            background-color: transparent;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            margin: 5px;
+            padding: 10px;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Aggiunge ombra */
+        }
+        .icon-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .light-mode {
+            background-color: #f5f5f5;
+            color: #000;
+        }
+        .light-mode .container {
+            background-color: #fff;
+        }
+        .light-mode input, .light-mode select {
+            background-color: #f0f0f0;
+            color: #000;
+        }
+        .light-mode th, .light-mode td {
+            border-color: #ccc;
+        }
+        .light-mode .icon-button {
+            color: #000; /* Cambia colore dei pulsanti in modalità chiara */
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* Ombra chiara in light mode */
+        }
+        .light-mode h2 {
+            color: red;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Mantiene l'ombra sul titolo */
+        }
+        /* Ombra e colore dei pulsanti round in modalità chiara */
+        .light-mode .round-button-small {
+            color: #000; /* Pulsanti neri in modalità chiara */
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* Ombra più leggera in modalità chiara */
+        }
+        @media print {
+            body {
+                background-color: #fff;
+                color: #000;
+            }
+            button {
+                display: none;
+            }
+            #speseDocumentateRow {
+                display: none;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        function calcolaParcella() {
+            let consulenze = parseFloat(document.getElementById("consulenze").value) || 0;
+            let speseDocumentate = parseFloat(document.getElementById("speseDocumentate").value) || 0;
+            let ivaPercentuale = parseFloat(document.getElementById("iva").value) || 22;
+            let contributoCassa = consulenze * 0.04;
+
+            let imponibile = consulenze + contributoCassa + speseDocumentate;
+            let iva = (imponibile * ivaPercentuale) / 100;
+            let totaleFattura = imponibile + iva;
+            let ritenutaFiscale = (totaleFattura * parseFloat(document.getElementById("ritenutaFiscaleInput").value) || 20) / 100;
+            let nettoAPagare = totaleFattura - ritenutaFiscale;
+
+            document.getElementById("contributoCassa").value = contributoCassa.toFixed(2);
+            document.getElementById("ivaImporto").value = iva.toFixed(2);
+            document.getElementById("totaleFattura").value = totaleFattura.toFixed(2);
+            document.getElementById("ritenutaFiscale").value = ritenutaFiscale.toFixed(2);
+            document.getElementById("nettoAPagare").value = nettoAPagare.toFixed(2);
+        }
+
+        function riaggiornaPagina() {
+            location.reload();
+        }
+
+        function condividiLink() {
+            alert("Funzione di condivisione non implementata.");
+        }
+
+        function stampaParcella() {
+            window.print();
+        }
+
+        function salvaDati() {
+            alert("Dati salvati.");
+        }
+
+        async function scaricaPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Parcella", 10, 10);
+            doc.text(`Consulenze: ${document.getElementById("consulenze").value} €`, 10, 20);
+            doc.text(`Spese Documentate: ${document.getElementById("speseDocumentate").value} €`, 10, 30);
+            doc.text(`IVA: ${document.getElementById("ivaImporto").value} €`, 10, 40);
+            doc.text(`Ritenuta Fiscale: ${document.getElementById("ritenutaFiscale").value} €`, 10, 50);
+            doc.text(`Totale Fattura: ${document.getElementById("totaleFattura").value} €`, 10, 60);
+            doc.text(`Netto a Pagare: ${document.getElementById("nettoAPagare").value} €`, 10, 70);
+            doc.save("parcella.pdf");
+        }
+
+        function toggleModalita() {
+            document.body.classList.toggle("light-mode");
+        }
+
+        // Funzione per aumentare la ritenuta fiscale
+        function aumentaRitenuta() {
+            let ritenutaFiscale = parseFloat(document.getElementById("ritenutaFiscaleInput").value) || 20;
+            ritenutaFiscale = Math.min(100, ritenutaFiscale + 1); // Massimo 100%
+            document.getElementById("ritenutaFiscaleInput").value = ritenutaFiscale;
+            calcolaParcella();
+        }
+
+        // Funzione per diminuire la ritenuta fiscale
+        function diminuisciRitenuta() {
+            let ritenutaFiscale = parseFloat(document.getElementById("ritenutaFiscaleInput").value) || 20;
+            ritenutaFiscale = Math.max(0, ritenutaFiscale - 1); // Minimo 0%
+            document.getElementById("ritenutaFiscaleInput").value = ritenutaFiscale;
+            calcolaParcella();
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Calcolo Parcella</h2>
+        <table>
+            <tr>
+                <th>Consulenze (€)</th>
+                <td><input type="number" id="consulenze" placeholder="Inserisci importo" oninput="calcolaParcella()"></td>
+            </tr>
+            <tr>
+                <th>Contributo Cassa Previdenza (4%)</th>
+                <td><input type="text" id="contributoCassa" value="0.00" readonly></td>
+            </tr>
+            <tr id="speseDocumentateRow">
+                <th>Spese Documentate (€)</th>
+                <td><input type="number" id="speseDocumentate" placeholder="Inserisci importo" oninput="calcolaParcella()"></td>
+            </tr>
+            <tr>
+                <th>IVA (%)</th>
+                <td>
+                    <select id="iva" onchange="calcolaParcella()">
+                        <option value="4">4%</option>
+                        <option value="5">5%</option>
+                        <option value="10">10%</option>
+                        <option value="22" selected>22%</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>Importo IVA (€)</th>
+                <td><input type="text" id="ivaImporto" value="0.00" readonly></td>
+            </tr>
+            <tr>
+                <th>Totale Fattura (€)</th>
+                <td><input type="text" id="totaleFattura" value="0.00" readonly></td>
+            </tr>
+            <tr>
+                <th>Ritenuta Fiscale (%)</th>
+                <td>
+                    <div class="ritenuta-buttons">
+                        <button class="round-button-small" onclick="diminuisciRitenuta()"><i class="fas fa-minus"></i></button>
+                        <input type="number" id="ritenutaFiscaleInput" value="20" oninput="calcolaParcella()" style="width: 60px;">
+                        <button class="round-button-small" onclick="aumentaRitenuta()"><i class="fas fa-plus"></i></button>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>Ritenuta Fiscale (€)</th>
+                <td><input type="text" id="ritenutaFiscale" value="0.00" readonly></td>
+            </tr>
+            <tr>
+                <th>Netto a Pagare (€)</th>
+                <td><input type="text" id="nettoAPagare" value="0.00" readonly></td>
+            </tr>
+        </table>
+        <div class="button-row">
+            <button class="icon-button" onclick="salvaDati()" title="Salva"><i class="fas fa-save"></i></button>
+            <button class="icon-button" onclick="condividiLink()" title="Condividi"><i class="fas fa-share-alt"></i></button>
+            <button class="icon-button" onclick="scaricaPDF()" title="Scarica PDF"><i class="fas fa-file-download"></i></button>
+            <button class="icon-button" onclick="riaggiornaPagina()" title="Riaggiorna"><i class="fas fa-sync"></i></button>
+            <button class="icon-button" onclick="stampaParcella()" title="Stampa"><i class="fas fa-print"></i></button>
+            <button class="icon-button" onclick="toggleModalita()" title="Modalità Chiara/Scura"><i class="fas fa-adjust"></i></button>
+        </div>
+    </div>
+</body>
+</html>
